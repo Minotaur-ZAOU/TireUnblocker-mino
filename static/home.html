@@ -168,84 +168,102 @@
         <pre id="uv-error-code"></pre>
     </div>
 
-	<canvas id="cosmicBackground" style="position: absolute; top: 0; left: 0; z-index: -2;"></canvas>
+<canvas id="cosmicBackground" style="position: absolute; top: 0; left: 0; z-index: -2;"></canvas>
+<script>
+    var t = 0;
+    var c = document.getElementById("cosmicBackground");
+    var $ = c.getContext('2d');
+    c.width = window.innerWidth;
+    c.height = window.innerHeight;
 
-	<script>
-		var t = 0;
-		var c = document.getElementById("cosmicBackground");	 
-		var $ = c.getContext('2d');
-		c.width = window.innerWidth;
-		c.height = window.innerHeight;
+    window.addEventListener('resize', function() {
+        c.width = window.innerWidth;
+        c.height = window.innerHeight;
+    }, false);
 
-		window.addEventListener('resize', function() {
-		  c.width = window.innerWidth;
-		  c.height = window.innerHeight;
-		}, false);
+    var textAlpha = 0; // テキストの初期透明度
+    var fadeInSpeed = 0.01; // フェードインの速度
 
-		function draw() {
-		  $.globalCompositeOperation = 'source-over';
-		  $.fillStyle = 'hsla(0,0%,0%,.1)';
-		  $.fillRect(0, 0, c.width, c.height);
-		  var foo, i, j, r;
-		  foo = Math.sin(t) * 2 * Math.PI;
-		  for (i=0; i<300; ++i) {
-			r = 300 * Math.cos(i * foo);
-			$.globalCompositeOperation = '';
-			$.fillStyle = 'hsla(0,0%,50%,0.7)';
-			$.beginPath();
-			$.arc(Math.sin(i) * r + (c.width / 2), 
-				  Math.cos(i) * r + (c.height / 2), 
-				  2, 0, Math.PI * 2);
-			$.fill();
-		  }
-		  t += 0.00001/2;
-		  return t %= 2 * Math.PI;
-		};
+    function draw() {
+        $.globalCompositeOperation = 'source-over';
+        $.fillStyle = 'hsla(0,0%,0%,.1)';
+        $.fillRect(0, 0, c.width, c.height);
+        var foo, i, j, r;
+        foo = Math.sin(t) * 2 * Math.PI;
+        for (i = 0; i < 300; ++i) {
+            r = 300 * Math.cos(i * foo);
+            $.globalCompositeOperation = '';
+            $.fillStyle = 'hsla(0,0%,50%,0.7)';
+            $.beginPath();
+            $.arc(Math.sin(i) * r + (c.width / 2),
+                  Math.cos(i) * r + (c.height / 2),
+                  2, 0, Math.PI * 2);
+            $.fill();
+        }
 
-		function run() {
-		  window.requestAnimationFrame(run);
-		  draw();
-		}
-		run();
+        // テキストの描画
+        $.globalCompositeOperation = 'source-over'; // 重ね描きモードのリセット
+        $.font = 'bold 60px Arial';
+        $.textAlign = 'center';
+        $.textBaseline = 'middle';
+        $.fillStyle = 'hsla(0, 100%, 100%, ' + textAlpha + ')';
+        $.fillText('proxy_minotaur', c.width / 2, c.height / 2);
 
-		var backgroundPulse = setInterval(pulseBackground, 5000);
+        // テキストのアルファ値を更新
+        if (textAlpha < 1) {
+            textAlpha += fadeInSpeed; // 徐々に不透明に
+        }
 
-		function pulseBackground() {
-			var currentAlpha = parseFloat($.fillStyle.split(',')[3]);
-			var newAlpha = currentAlpha === 0.1 ? 0.15 : 0.1;
-			$.fillStyle = 'hsla(0,0%,0%,' + newAlpha + ')';
-		}
+        t += 0.00001 / 2;
+        return t %= 2 * Math.PI;
+    };
 
-		window.addEventListener('focus', function() {
-			clearInterval(backgroundPulse);
-			c.style.filter = "brightness(100%)";
-		});
+    function run() {
+        window.requestAnimationFrame(run);
+        draw();
+    }
+    
+    run();
 
-		window.addEventListener('blur', function() {
-			backgroundPulse = setInterval(pulseBackground, 5000);
-			c.style.filter = "brightness(50%)";
-		});
+    var backgroundPulse = setInterval(pulseBackground, 5000);
 
-		c.addEventListener('mousemove', function(event) {
-			var mouseX = event.clientX;
-			var mouseY = event.clientY;
-			$.clearRect(0, 0, c.width, c.height);
-			draw();
-			for (var i = 0; i < 300; ++i) {
-				r = 300 * Math.cos(i * Math.sin(t));
-				$.fillStyle = 'hsla(0,0%,50%,0.7)';
-				$.beginPath();
-				$.arc(Math.sin(i) * r + (c.width / 2), 
-					  Math.cos(i) * r + (c.height / 2), 
-					  2, 0, Math.PI * 2);
-				if (Math.abs(mouseX - (Math.sin(i) * r + (c.width / 2))) < 50 && 
-					Math.abs(mouseY - (Math.cos(i) * r + (c.height / 2))) < 50) {
-					$.fillStyle = 'hsla(0,0%,50%,1)';
-				}
-				$.fill();
-			}
-		});
-	</script>
+    function pulseBackground() {
+        var currentAlpha = parseFloat($.fillStyle.split(',')[3]);
+        var newAlpha = currentAlpha === 0.1 ? 0.15 : 0.1;
+        $.fillStyle = 'hsla(0,0%,0%,' + newAlpha + ')';
+    }
+
+    window.addEventListener('focus', function() {
+        clearInterval(backgroundPulse);
+        c.style.filter = "brightness(100%)";
+    });
+
+    window.addEventListener('blur', function() {
+        backgroundPulse = setInterval(pulseBackground, 5000);
+        c.style.filter = "brightness(50%)";
+    });
+
+    c.addEventListener('mousemove', function(event) {
+        var mouseX = event.clientX;
+        var mouseY = event.clientY;
+        $.clearRect(0, 0, c.width, c.height);
+        draw();
+        for (var i = 0; i < 300; ++i) {
+            r = 300 * Math.cos(i * Math.sin(t));
+            $.fillStyle = 'hsla(0,0%,50%,0.7)';
+            $.beginPath();
+            $.arc(Math.sin(i) * r + (c.width / 2),
+                  Math.cos(i) * r + (c.height / 2),
+                  2, 0, Math.PI * 2);
+            if (Math.abs(mouseX - (Math.sin(i) * r + (c.width / 2))) < 50 &&
+                Math.abs(mouseY - (Math.cos(i) * r + (c.height / 2))) < 50) {
+                $.fillStyle = 'hsla(0,0%,50%,1)';
+            }
+            $.fill();
+        }
+    });
+</script>
+
 <script>
     var haha = document.getElementById("haha");
 
